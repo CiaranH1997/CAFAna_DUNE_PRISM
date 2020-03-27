@@ -22,6 +22,7 @@ void PRISMPrediction(fhicl::ParameterSet const &pred) {
   std::string const &varname =
       pred.get<std::string>("projection_name");
   bool isfhc = pred.get<bool>("isFHC", true);
+  bool is_fake_spec_run = pred.get<bool>("is_fake_spec_run");
 
   double reg = pred.get<double>("reg_factor");
   std::array<double, 2> fit_range =
@@ -64,13 +65,13 @@ void PRISMPrediction(fhicl::ParameterSet const &pred) {
   fluxmatcher.InitializeEventRateMatcher(state.NDMatchInterp.get(),
                                          state.FDMatchInterp.get());
   fluxmatcher.SetStoreDebugMatches();
-  if (pred.get<bool>("is_fake_spec_run", false)) {
+
+  if (!is_fake_spec_run) {
     fluxmatcher.SetTargetConditioning(reg,
-                                      {
-                                          {0},
-                                      },
+                                      {{0},},
                                       fit_range[0], fit_range[1]);
-  } else {
+  } else { // we are doing a fake special run
+    fluxmatcher.SetNoRegAltHC();
     fluxmatcher.SetTargetConditioning(reg, {}, fit_range[0], fit_range[1]);
   }
 

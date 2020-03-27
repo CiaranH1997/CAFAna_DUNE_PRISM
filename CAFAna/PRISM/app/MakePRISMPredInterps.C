@@ -27,35 +27,35 @@ std::string EnsureTrailingSlash(std::string str) {
 
 std::string parseCode(std::regex_constants::error_type etype) {
   switch (etype) {
-  case std::regex_constants::error_collate:
-    return "error_collate: invalid collating element request";
-  case std::regex_constants::error_ctype:
-    return "error_ctype: invalid character class";
-  case std::regex_constants::error_escape:
-    return "error_escape: invalid escape character or trailing escape";
-  case std::regex_constants::error_backref:
-    return "error_backref: invalid back reference";
-  case std::regex_constants::error_brack:
-    return "error_brack: mismatched bracket([ or ])";
-  case std::regex_constants::error_paren:
-    return "error_paren: mismatched parentheses(( or ))";
-  case std::regex_constants::error_brace:
-    return "error_brace: mismatched brace({ or })";
-  case std::regex_constants::error_badbrace:
-    return "error_badbrace: invalid range inside a { }";
-  case std::regex_constants::error_range:
-    return "erro_range: invalid character range(e.g., [z-a])";
-  case std::regex_constants::error_space:
-    return "error_space: insufficient memory to handle this regular expression";
-  case std::regex_constants::error_badrepeat:
-    return "error_badrepeat: a repetition character (*, ?, +, or {) was not "
-           "preceded by a valid regular expression";
-  case std::regex_constants::error_complexity:
-    return "error_complexity: the requested match is too complex";
-  case std::regex_constants::error_stack:
-    return "error_stack: insufficient memory to evaluate a match";
-  default:
-    return "";
+    case std::regex_constants::error_collate:
+      return "error_collate: invalid collating element request";
+    case std::regex_constants::error_ctype:
+      return "error_ctype: invalid character class";
+    case std::regex_constants::error_escape:
+      return "error_escape: invalid escape character or trailing escape";
+    case std::regex_constants::error_backref:
+      return "error_backref: invalid back reference";
+    case std::regex_constants::error_brack:
+      return "error_brack: mismatched bracket([ or ])";
+    case std::regex_constants::error_paren:
+      return "error_paren: mismatched parentheses(( or ))";
+    case std::regex_constants::error_brace:
+      return "error_brace: mismatched brace({ or })";
+    case std::regex_constants::error_badbrace:
+      return "error_badbrace: invalid range inside a { }";
+    case std::regex_constants::error_range:
+      return "erro_range: invalid character range(e.g., [z-a])";
+    case std::regex_constants::error_space:
+      return "error_space: insufficient memory to handle this regular expression";
+    case std::regex_constants::error_badrepeat:
+      return "error_badrepeat: a repetition character (*, ?, +, or {) was not "
+             "preceded by a valid regular expression";
+    case std::regex_constants::error_complexity:
+      return "error_complexity: the requested match is too complex";
+    case std::regex_constants::error_stack:
+      return "error_stack: insufficient memory to evaluate a match";
+    default:
+      return "";
   }
 }
 
@@ -91,9 +91,9 @@ std::string DeGlobPattern(std::string const &pattern) {
   return ss.str();
 }
 
-std::vector<std::string> GetMatchingFiles(std::string directory,
-                                          std::string pattern,
-                                          bool IncDir = true) {
+std::vector <std::string> GetMatchingFiles(std::string directory,
+                                           std::string pattern,
+                                           bool IncDir = true) {
 
   directory = EnsureTrailingSlash(directory);
   pattern = DeGlobPattern(pattern);
@@ -103,7 +103,7 @@ std::vector<std::string> GetMatchingFiles(std::string directory,
 
   std::regex rpattern(pattern);
 
-  std::vector<std::string> matches;
+  std::vector <std::string> matches;
 
   DIR *dir;
   struct dirent *ent;
@@ -126,9 +126,9 @@ std::string axdescriptor = "EProxy";
 std::string binningdescriptor = "default";
 std::string oabinningdescriptor = "default";
 std::string truthbinningdescriptor = "uniform";
-std::vector<std::string> ND_input_patterns;
-std::vector<std::string> FD_input_patterns;
-std::pair<std::string, std::string> SpecialRunWeightHist;
+std::vector <std::string> ND_input_patterns;
+std::vector <std::string> FD_input_patterns;
+std::pair <std::string, std::string> SpecialRunWeightHist;
 bool addfakedata = true;
 bool do_no_op = false;
 unsigned nmax = 0;
@@ -138,44 +138,44 @@ std::string FakeDataShiftDescript = "";
 
 void SayUsage(char const *argv[]) {
   std::cout
-      << "[USAGE]: " << argv[0] << "\n"
-      << "\t-A|--axes <A>             : Fit axis specifier. (default: A = "
-         "\"EProxy\")\n"
-      << "\t-o|--output <F>           : Output file name. Should not "
-         "already "
-         "exist.\n"
-      << "\t-N|--ND-input-pattern <P> : Regex pattern to search for input\n"
-      << "\t                            Files. Can only include pattern \n"
-         "\t                            elements for files.\n"
-      << "\t-F|--FD-input-pattern <P> : Regex pattern to search for input\n"
-      << "\t                            Files. Can only include pattern \n"
-         "\t                            elements for files.\n"
-      << "\t-R|--is-RHC               : Inputs are RHC."
-      << "\t-n|--n-max <N>            : Max number of events to read.\n"
-      << "\t--syst-descriptor <str>   : Only add dials matching the syst\n"
-         "\t                            descriptor <str> to the state "
-         "file.\n"
-      << "\t--bin-descriptor <str>  : Analysis bin descriptor.\n"
-      << "\t--OA-bin-descriptor <str>    : Bin descriptor for off axis "
-         "samples.\n"
-      << "\t--truth-bin-descriptor <str> : Bin descriptor for matching "
-         "distributions.\n"
-      << "\t--no-fakedata-dials       : Do not add the fake data dials to "
-         "the\n"
-         "\t                            state file\n"
-      << "\t--no-op                   : Do nothing but dump dials that "
-         "would\n"
-      << "\t--PRISM-fake-data <fake_data_dial> : A fake data dial to set on "
-         "the PRISM ND data.\n"
-         "\t                            be included.\n"
-      << "\t--FakeSR <file:whist>     : Fake a single special beam run by\n"
-         "\t                            weighting on axis events with x < 0 \n"
-         "\t                            in true energy with associated \n"
-         "\t                            histogram."
-      << "\t--UseSelection            : Use the on-axis analysis selection. \n"
-         "\t                            This will produce a bad PRISM "
-         "prediction."
-      << std::endl;
+          << "[USAGE]: " << argv[0] << "\n"
+          << "\t-A|--axes <A>             : Fit axis specifier. (default: A = "
+             "\"EProxy\")\n"
+          << "\t-o|--output <F>           : Output file name. Should not "
+             "already "
+             "exist.\n"
+          << "\t-N|--ND-input-pattern <P> : Regex pattern to search for input\n"
+          << "\t                            Files. Can only include pattern \n"
+             "\t                            elements for files.\n"
+          << "\t-F|--FD-input-pattern <P> : Regex pattern to search for input\n"
+          << "\t                            Files. Can only include pattern \n"
+             "\t                            elements for files.\n"
+          << "\t-R|--is-RHC               : Inputs are RHC."
+          << "\t-n|--n-max <N>            : Max number of events to read.\n"
+          << "\t--syst-descriptor <str>   : Only add dials matching the syst\n"
+             "\t                            descriptor <str> to the state "
+             "file.\n"
+          << "\t--bin-descriptor <str>  : Analysis bin descriptor.\n"
+          << "\t--OA-bin-descriptor <str>    : Bin descriptor for off axis "
+             "samples.\n"
+          << "\t--truth-bin-descriptor <str> : Bin descriptor for matching "
+             "distributions.\n"
+          << "\t--no-fakedata-dials       : Do not add the fake data dials to "
+             "the\n"
+             "\t                            state file\n"
+          << "\t--no-op                   : Do nothing but dump dials that "
+             "would\n"
+          << "\t--PRISM-fake-data <fake_data_dial> : A fake data dial to set on "
+             "the PRISM ND data.\n"
+             "\t                            be included.\n"
+          << "\t--FakeSR <file:whist>     : Fake a single special beam run by\n"
+             "\t                            weighting on axis events with x < 0 \n"
+             "\t                            in true energy with associated \n"
+             "\t                            histogram."
+          << "\t--UseSelection            : Use the on-axis analysis selection. \n"
+             "\t                            This will produce a bad PRISM "
+             "prediction."
+          << std::endl;
 }
 
 void handleOpts(int argc, char const *argv[]) {
@@ -258,7 +258,7 @@ int main(int argc, char const *argv[]) {
     }
   }
 
-  std::vector<std::vector<std::string>> file_lists;
+  std::vector <std::vector<std::string>> file_lists;
   size_t NFiles = 0;
   for (auto ip : {ND_input_patterns, FD_input_patterns}) {
     file_lists.emplace_back();
@@ -278,15 +278,15 @@ int main(int argc, char const *argv[]) {
       }
 
       std::string dir = (last_slash_loc == std::string::npos)
-                            ? std::string("")
-                            : InputFilePattern.substr(0, last_slash_loc + 1);
+                        ? std::string("")
+                        : InputFilePattern.substr(0, last_slash_loc + 1);
       std::string pattern = (last_slash_loc == std::string::npos)
-                                ? InputFilePattern
-                                : InputFilePattern.substr(
-                                      last_slash_loc + 1,
-                                      InputFilePattern.size() - last_slash_loc);
+                            ? InputFilePattern
+                            : InputFilePattern.substr(
+                      last_slash_loc + 1,
+                      InputFilePattern.size() - last_slash_loc);
 
-      std::vector<std::string> CAFs;
+      std::vector <std::string> CAFs;
 
       if ((earliest_regex == std::string::npos)) {
         CAFs.push_back(dir + pattern);
@@ -306,7 +306,7 @@ int main(int argc, char const *argv[]) {
   }
 
   for (size_t fl_it = 0; fl_it < file_lists.size(); ++fl_it) {
-    std::vector<std::string> fl = file_lists[fl_it];
+    std::vector <std::string> fl = file_lists[fl_it];
     if (!fl.size()) {
       std::cout << "[ERROR]: Failed to find any " << (fl_it ? "ND" : "FD")
                 << " files." << std::endl;
@@ -316,13 +316,13 @@ int main(int argc, char const *argv[]) {
     }
   }
 
-  std::vector<ana::ISyst const *> los, los_flux;
+  std::vector < ana::ISyst const * > los, los_flux;
   if (syst_descriptor.size()) {
     los = GetListOfSysts(syst_descriptor);
 
     // Have to add fake data systs too.
-    std::vector<ana::ISyst const *> fdlos = GetListOfSysts(
-        false, false, false, false, false, false, addfakedata, false);
+    std::vector < ana::ISyst const * > fdlos = GetListOfSysts(
+            false, false, false, false, false, false, addfakedata, false);
     los.insert(los.end(), fdlos.begin(), fdlos.end());
 
     los_flux = los;
@@ -357,7 +357,7 @@ int main(int argc, char const *argv[]) {
     TFile fout(output_file_name.c_str(), "RECREATE");
 
     PRISMAxisBlob axes =
-        GetPRISMAxes(axdescriptor, binningdescriptor, oabinningdescriptor);
+            GetPRISMAxes(axdescriptor, binningdescriptor, oabinningdescriptor);
 
     HistAxis EventRateMatchAxis = GetEventRateMatchAxes(truthbinningdescriptor);
 
@@ -372,27 +372,27 @@ int main(int argc, char const *argv[]) {
 
     if (whist) { // If we are faking a special run
       auto specrunweight =
-          ana::Var({}, [&](const caf::StandardRecord *sr) -> double {
-            if (sr->dune.det_x || (sr->dune.vtx_x > 0)) {
-              return 1;
-            }
-            return whist->GetBinContent(
-                whist->GetXaxis()->FindFixBin(sr->dune.Ev));
-          });
-
+              ana::Var({}, [&](const caf::StandardRecord *sr) -> double {
+                if (sr->dune.det_x || (sr->dune.vtx_x > 0)) {
+                  return 1;
+                }
+                return whist->GetBinContent(
+                        whist->GetXaxis()->FindFixBin(sr->dune.Ev));
+              });
       NDWeight = NDWeight * specrunweight;
       NDAnaWeight = NDAnaWeight * specrunweight;
+      std::cout << "weighted by whist" << std::endl;
     }
 
     if (oabinningdescriptor == "OneNegXBin") {
       auto specrunweight =
-          ana::Var({}, [&](const caf::StandardRecord *sr) -> double {
-            if (sr->dune.det_x || (sr->dune.vtx_x > 0)) {
-              return 1;
-            }
-            // Correct for the bin width
-            return (0.5 / 2);
-          });
+              ana::Var({}, [&](const caf::StandardRecord *sr) -> double {
+                if (sr->dune.det_x || (sr->dune.vtx_x > 0)) {
+                  return 1;
+                }
+                // Correct for the bin width
+                return (0.5 / 2);
+              });
       NDWeight = NDWeight * specrunweight;
       NDAnaWeight = NDAnaWeight * specrunweight;
     }
@@ -407,11 +407,11 @@ int main(int argc, char const *argv[]) {
                          Loaders::kNonSwap);
 
     ana::SystShifts DataShift =
-        GetFakeDataGeneratorSystShift(FakeDataShiftDescript);
+            GetFakeDataGeneratorSystShift(FakeDataShiftDescript);
 
     auto PRISM = std::make_unique<PredictionPRISM>(
-        PRISMNDLoader, axes.XProjection, axes.OffAxisPosition, NDSignalCut,
-        NDAnaWeight, DataShift);
+            PRISMNDLoader, axes.XProjection, axes.OffAxisPosition, NDSignalCut,
+            NDAnaWeight, DataShift);
 
     // Don't need to specify full truth signal here as it will not apply any
     // corrections by default, allows us to debug what the corrections would
@@ -427,9 +427,9 @@ int main(int argc, char const *argv[]) {
 
     // Make the ND prediction interp include the same off-axis axis used for
     // PRISM weighting.
-    std::vector<std::string> Labels = EventRateMatchAxis.GetLabels();
-    std::vector<Binning> Bins = EventRateMatchAxis.GetBinnings();
-    std::vector<Var> Vars = EventRateMatchAxis.GetVars();
+    std::vector <std::string> Labels = EventRateMatchAxis.GetLabels();
+    std::vector <Binning> Bins = EventRateMatchAxis.GetBinnings();
+    std::vector <Var> Vars = EventRateMatchAxis.GetVars();
 
     Labels.push_back(axes.OffAxisPosition.GetLabels().front());
     Bins.push_back(axes.OffAxisPosition.GetBinnings().front());
@@ -438,67 +438,67 @@ int main(int argc, char const *argv[]) {
     HistAxis const NDEventRateSpectraAxis(Labels, Bins, Vars);
 
     // Prediction generator for in FV, unselected, right sign numu ND
-    std::unique_ptr<NoOscPredictionGenerator> NDMatchPredGen(
-        new NoOscPredictionGenerator(NDEventRateSpectraAxis,
-                                     kIsNumuCC && !kIsAntiNu && kIsTrueFV &&
+    std::unique_ptr <NoOscPredictionGenerator> NDMatchPredGen(
+            new NoOscPredictionGenerator(NDEventRateSpectraAxis,
+                                         kIsNumuCC && !kIsAntiNu && kIsTrueFV &&
                                          kIsOutOfTheDesert,
-                                     NDWeight));
+                                         NDWeight));
 
     // Prediction generator for in FV, unselected, right sign numu FD
-    std::unique_ptr<NoExtrapPredictionGenerator> FDMatchPredGen(
-        new NoExtrapPredictionGenerator(EventRateMatchAxis,
-                                        kIsNumuCC && !kIsAntiNu && kIsTrueFV,
-                                        FDWeight));
+    std::unique_ptr <NoExtrapPredictionGenerator> FDMatchPredGen(
+            new NoExtrapPredictionGenerator(EventRateMatchAxis,
+                                            kIsNumuCC && !kIsAntiNu && kIsTrueFV,
+                                            FDWeight));
 
     osc::IOscCalculatorAdjustable *calc = NuFitOscCalc(1);
 
     // These only require access to the flux systs.
     auto NDMatchInterp = std::make_unique<PredictionInterp>(
-        los_flux, calc, *NDMatchPredGen, TheLoaders);
+            los_flux, calc, *NDMatchPredGen, TheLoaders);
     auto FDMatchInterp = std::make_unique<PredictionInterp>(
-        los_flux, calc, *FDMatchPredGen, TheLoaders);
+            los_flux, calc, *FDMatchPredGen, TheLoaders);
 
     auto FarDetData = std::make_unique<OscillatableSpectrum>(
-        loaderFDNumu, axes.XProjection, FDSignalCut, DataShift, FDAnaWeight);
+            loaderFDNumu, axes.XProjection, FDSignalCut, DataShift, FDAnaWeight);
 
-    std::unique_ptr<NoExtrapPredictionGenerator> FDPredGen(
-        new NoExtrapPredictionGenerator(axes.XProjection, FDSignalCut,
-                                        FDAnaWeight));
+    std::unique_ptr <NoExtrapPredictionGenerator> FDPredGen(
+            new NoExtrapPredictionGenerator(axes.XProjection, FDSignalCut,
+                                            FDAnaWeight));
 
     auto FarDet =
-        std::make_unique<PredictionInterp>(los, calc, *FDPredGen, TheLoaders);
+            std::make_unique<PredictionInterp>(los, calc, *FDPredGen, TheLoaders);
 
-    std::unique_ptr<NoExtrapPredictionGenerator> FDPredGenSel(
-        new NoExtrapPredictionGenerator(axes.XProjection, GetFDSignalCut(true),
-                                        FDAnaWeight));
+    std::unique_ptr <NoExtrapPredictionGenerator> FDPredGenSel(
+            new NoExtrapPredictionGenerator(axes.XProjection, GetFDSignalCut(true),
+                                            FDAnaWeight));
     auto FarDetSel = std::make_unique<PredictionInterp>(
-        los, calc, *FDPredGenSel, TheLoaders);
+            los, calc, *FDPredGenSel, TheLoaders);
 
     TheLoaders.Go();
 
     PRISM->SaveTo(fout.mkdir((std::string("PRISM_") + axdescriptor +
                               std::string(IsRHC ? "_rhc" : "_fhc"))
-                                 .c_str()));
+                                     .c_str()));
 
     NDMatchInterp->GetPredNomAs<PredictionNoOsc>()->OverridePOT(1);
     NDMatchInterp->SaveTo(fout.mkdir((std::string("NDMatchInterp_ETrue") +
                                       std::string(IsRHC ? "_rhc" : "_fhc"))
-                                         .c_str()));
+                                             .c_str()));
     FDMatchInterp->SaveTo(fout.mkdir((std::string("FDMatchInterp_ETrue") +
                                       std::string(IsRHC ? "_rhc" : "_fhc"))
-                                         .c_str()));
+                                             .c_str()));
 
     FarDetData->SaveTo(fout.mkdir((std::string("FarDetData_") + axdescriptor +
-                               std::string(IsRHC ? "_rhc" : "_fhc"))
-                                  .c_str()));
+                                   std::string(IsRHC ? "_rhc" : "_fhc"))
+                                          .c_str()));
 
     FarDet->SaveTo(fout.mkdir((std::string("FarDet_") + axdescriptor +
                                std::string(IsRHC ? "_rhc" : "_fhc"))
-                                  .c_str()));
+                                      .c_str()));
 
     FarDetSel->SaveTo(fout.mkdir((std::string("FarDetSel_") + axdescriptor +
                                   std::string(IsRHC ? "_rhc" : "_fhc"))
-                                     .c_str()));
+                                         .c_str()));
 
     fout.Write();
     fout.Close();

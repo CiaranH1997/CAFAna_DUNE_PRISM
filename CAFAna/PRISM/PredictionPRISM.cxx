@@ -183,12 +183,13 @@ PredictionPRISM::PredictPRISMComponents(osc::IOscCalculator *calc,
     double NDPOT = NDSig_spec.POT();
 
     std::unique_ptr<TH2> NDSig_h(NDSig_spec.ToTH2(NDPOT));
-
+    // Define a a ND spectrum which can be weighted by the off-axis weights
+    // to get the PRISM prediction
     ReweightableSpectrum NDSig(fOffAxis.GetVars()[0], NDSig_h.get(),
                                fPredictionAxis.GetLabels(),
                                fPredictionAxis.GetBinnings(), 1, 1);
 
-    NDComps.emplace(kNDSig, NDSig);
+    NDComps.emplace(kNDSig, NDSig); // assigning PRISMComponent enum
     NDComps.emplace(kNDSig2D, NDSig);
 
     if (fNCCorrection) {
@@ -202,7 +203,7 @@ PredictionPRISM::PredictPRISMComponents(osc::IOscCalculator *calc,
                               fPredictionAxis.GetBinnings(), 1, 1);
 
       NDComps.emplace(kNDNCBkg, NC);
-      if (NDComps.count(kNDDataCorr2D)) {
+      if (NDComps.count(kNDDataCorr2D)) { // take away NC events
         NDComps.at(kNDDataCorr2D) -= NDComps.at(kNDNCBkg);
       }
     }
@@ -218,7 +219,7 @@ PredictionPRISM::PredictPRISMComponents(osc::IOscCalculator *calc,
                                fPredictionAxis.GetBinnings(), 1, 1);
 
       NDComps.emplace(kNDNueBkg, Nue);
-      if (NDComps.count(kNDDataCorr2D)) {
+      if (NDComps.count(kNDDataCorr2D)) { // take away intrinsic Nue events
         NDComps.at(kNDDataCorr2D) -= NDComps.at(kNDNueBkg);
       }
     }
@@ -234,7 +235,7 @@ PredictionPRISM::PredictPRISMComponents(osc::IOscCalculator *calc,
                                fPredictionAxis.GetBinnings(), 1, 1);
 
       NDComps.emplace(kNDWSBkg, WSB);
-      if (NDComps.count(kNDDataCorr2D)) {
+      if (NDComps.count(kNDDataCorr2D)) { // take away WSB events
         NDComps.at(kNDDataCorr2D) -= NDComps.at(kNDWSBkg);
       }
     }
@@ -251,26 +252,32 @@ PredictionPRISM::PredictPRISMComponents(osc::IOscCalculator *calc,
   }
 
   if (fFluxMatcher) {
+    // Get 1D hist of off-axis weights from flux matcher set using
+    // ND and FD predInterps from state.PRISM->SetFluxMatcher(&fluxmatcher)
     TH1 const *LinearCombination = fFluxMatcher->GetMatchCoefficients(
         calc, fMaxOffAxis, fNDFluxSpecies, fFDFluxSpecies, shift);
 
-    if (NDComps.count(kNDSig)) {
+    if (NDComps.count(kNDSig)) { // is their an ND signal
+      // In our output components put the ND signal combined with off-axis weights
+      // to give the PRISM prediction
       Comps.emplace(kNDSig,
                     NDComps.at(kNDSig).WeightedByErrors(LinearCombination));
+      // Put linearly combined ND signal into the kPRISMMC
       Comps.emplace(kPRISMMC, Comps.at(kNDSig));
     }
-
+    // Perform linear combination using off-axis weights for ND data corrected
+    // for the various backgrounds
     Comps.emplace(
         kNDDataCorr,
         NDComps.at(kNDDataCorr2D).WeightedByErrors(LinearCombination));
-
+    // This will be the overall PRISM prediction once the backgrounds are added back in
     Comps.emplace(
         kPRISMPred, Comps.at(kNDDataCorr));
 
     // If we have the FD background predictions add them back in
     if (fHaveFDPred) {
 
-      if (fNCCorrection) {
+      if (fNCCorrection) { // Add FD NC events back in
         Comps.emplace(kFDNCBkg, fFarDetPrediction->PredictComponentSyst(
                                     calc, shift, Flavors::kAll, Current::kNC,
                                     Sign::kBoth));
@@ -281,7 +288,7 @@ PredictionPRISM::PredictPRISMComponents(osc::IOscCalculator *calc,
         }
       }
 
-      if (fNueCorrection) {
+      if (fNueCorrection) { // Add FD intrinsic Nue events back in
         Comps.emplace(kFDNueBkg, fFarDetPrediction->PredictComponentSyst(
                                      calc, shift, Flavors::kAllNuE,
                                      Current::kCC, Sign::kBoth));
@@ -291,7 +298,7 @@ PredictionPRISM::PredictPRISMComponents(osc::IOscCalculator *calc,
         }
       }
 
-      if (fWSBCorrection) {
+      if (fWSBCorrection) { // Add FD WSB back in
         Comps.emplace(kFDWSBkg, fFarDetPrediction->PredictComponentSyst(
                                     calc, shift, Flavors::kAllNuMu,
                                     Current::kCC, WrongSign));
@@ -300,7 +307,7 @@ PredictionPRISM::PredictPRISMComponents(osc::IOscCalculator *calc,
           Comps.at(kPRISMMC) += Comps.at(kFDWSBkg);
         }
       }
-
+      // Get residual calculated in GetMatchCoefficients() and set fFluxMissWeighter
       InterpolateFluxMissMatcher();
 
       fFarDetPrediction->GetPredNomAs<PredictionEnuWeightedNoExtrap>()

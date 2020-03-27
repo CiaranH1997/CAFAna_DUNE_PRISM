@@ -161,6 +161,8 @@ TH1 const *PRISMExtrapolator::GetMatchCoefficientsEventRate(
     for (int row_it = 0; row_it < (NCoeffs - 1); ++row_it) {
       // Always penalize coefficient height;
       RegMatrix(row_it, row_it) = fRegFactor;
+      // if we are doing a fake special run do not reg Alt HC
+      if (fNoRegAltHC) RegMatrix(0, 0) = 0;
       // Penalize neighbouring coefficient difference by fCoeffRegVector[it]
       RegMatrix(row_it, row_it + 1) = -fRegFactor * fCoeffRegVector[row_it];
     }

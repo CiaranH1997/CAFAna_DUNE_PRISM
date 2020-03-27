@@ -14,26 +14,26 @@
 
 using namespace ana;
 
-std::map<std::string, PRISMStateBlob> States;
+std::map <std::string, PRISMStateBlob> States;
 
 void PRISMPrediction(fhicl::ParameterSet const &pred) {
 
   std::string const &state_file = pred.get<std::string>("state_file");
-  std::vector<std::string> const &output_file =
-      pred.get<std::vector<std::string>>("output_file");
+  std::vector <std::string> const &output_file =
+          pred.get < std::vector < std::string >> ("output_file");
   std::string const &output_dir = pred.get<std::string>("output_dir");
   std::string const &varname =
-      pred.get<std::string>("projection_name");
+          pred.get<std::string>("projection_name");
   bool isfhc = pred.get<bool>("isFHC", true);
 
   double reg = pred.get<double>("reg_factor");
-  std::array<double, 2> fit_range =
-      pred.get<std::array<double, 2>>("fit_range");
+  std::array < double, 2 > fit_range =
+                               pred.get < std::array < double, 2 >> ("fit_range");
 
-  (void)GetListOfSysts();
+  (void) GetListOfSysts();
 
   osc::IOscCalculatorAdjustable *calc =
-      ConfigureCalc(pred.get<fhicl::ParameterSet>("Osc", {}));
+          ConfigureCalc(pred.get<fhicl::ParameterSet>("Osc", {}));
 
   if (!States.count(state_file)) {
     TFile fs(state_file.c_str());
@@ -59,7 +59,7 @@ void PRISMPrediction(fhicl::ParameterSet const &pred) {
 
   int id = 0;
   PRISMExtrapolator fluxmatcher;
-  
+
   fluxmatcher.InitializeEventRateMatcher(state.NDMatchInterp.get(),
                                          state.FDMatchInterp.get());
   fluxmatcher.SetStoreDebugMatches();
@@ -73,7 +73,7 @@ void PRISMPrediction(fhicl::ParameterSet const &pred) {
 
   Spectrum PRISMPredEvRateMatchSpec = state.PRISM->PredictSyst(calc, shift);
 
-  double pot = pot_fd*(1.0/3.5);
+  double pot = pot_fd * (1.0 / 3.5);
 
   //******************************************
   // Attempt a ChiSq fit using CAFAna method *
@@ -82,33 +82,29 @@ void PRISMPrediction(fhicl::ParameterSet const &pred) {
   std::cout << std::endl << "Osc Parameters BEFORE: " << std::endl;
   std::cout << "dMsq32 = " << calc->GetDmsq32() << std::endl;
   std::cout << "Theta23 = " << calc->GetTh23() << std::endl;
- 
-  SingleSampleExperiment expt = SingleSampleExperiment(state.FarDet.get(), 
+
+  SingleSampleExperiment expt = SingleSampleExperiment(state.FarDet.get(),
                                                        PRISMPredEvRateMatchSpec.FakeData(pot));
 
   FrequentistSurface surf = FrequentistSurface(&expt, calc,
-                     &kFitSinSqTheta23, 30, 0.4, 0.6, 
-                     &kFitDmSq32Scaled, 30, 2.2, 2.6);
+                                               &kFitSinSqTheta23, 30, 0.4, 0.6,
+                                               &kFitDmSq32Scaled, 30, 2.2, 2.6);
 
-  TH2* crit1sig = Gaussian68Percent2D(surf);
-  TH2* crit3sig = Gaussian3Sigma2D(surf);
+  TH2 *crit1sig = Gaussian68Percent2D(surf);
+  TH2 *crit3sig = Gaussian3Sigma2D(surf);
   TCanvas *c = new TCanvas("c", "Contours", 800, 600);
   surf.DrawContour(crit1sig, kSolid, kBlue);
   surf.DrawContour(crit3sig, kSolid, kRed);
   surf.DrawBestFit(kBlack);
   c->Update();
-  c->Write(); 
-  
+  c->Write();
+
   //******************************************
 
   // check parameters
   std::cout << std::endl << "Osc Parameters: " << std::endl;
   std::cout << "dMsq32 = " << calc->GetDmsq32() << std::endl;
-  std::cout << "dMsq21 = " << calc->GetDmsq21() << std::endl;
-  std::cout << "Theta12 = " << calc->GetTh12() << std::endl;
-  std::cout << "Theta13 = " << calc->GetTh13() << std::endl;
   std::cout << "Theta23 = " << calc->GetTh23() << std::endl;
-  std::cout << "dCP = " << calc->GetdCP() << "(pi)" << std::endl << std::endl;
 
   TH1 *PRISMPredEvRateMatch_h = PRISMPredEvRateMatchSpec.ToTHX(pot);
 
@@ -123,7 +119,7 @@ void PRISMPrediction(fhicl::ParameterSet const &pred) {
     comp->SetTitle(";E_{#nu} (GeV);Pred. FD Contribution per 1 GeV");
     comp->Write((std::string("PRISMPredEvRateMatch_") +
                  PredictionPRISM::GetComponentString(compspec.first))
-                    .c_str());
+                        .c_str());
   }
 
   fluxmatcher.Write(dir->mkdir("PRISMEventRateMatches"));
@@ -165,7 +161,7 @@ int main(int argc, char const *argv[]) {
   fhicl::ParameterSet const &ps = fhicl::make_ParameterSet(argv[1]);
 
   for (fhicl::ParameterSet const &pred :
-       ps.get<std::vector<fhicl::ParameterSet>>("predictions")) {
+          ps.get < std::vector < fhicl::ParameterSet >> ("predictions")) {
     PRISMPrediction(pred);
   }
 }

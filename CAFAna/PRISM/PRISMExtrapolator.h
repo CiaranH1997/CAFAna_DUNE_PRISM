@@ -85,6 +85,9 @@ public:
     fLowEGaussFallOff = LowEGaussTail;
   }
 
+  // Doing a fake special run so no reg on Alt HC
+  void SetNoRegAltHC(bool v = true) { fNoRegAltHC = v; }
+
 protected:
   std::vector<std::unique_ptr<TH2>> NDOffAxisPrediction;
   std::vector<std::unique_ptr<TH1>> FDUnOscPrediction;
@@ -101,6 +104,7 @@ protected:
   double fENuMax;
   mutable std::vector<double> fCoeffRegVector;
   bool fLowEGaussFallOff;
+  bool fNoRegAltHC = false;
 
   mutable std::map<std::string, std::unique_ptr<TH1>> fMatchCache;
 
