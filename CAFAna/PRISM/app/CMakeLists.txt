@@ -4,7 +4,7 @@ set(scripts_to_build
     OffAxisNDCAFCombiner
     PRISMPrediction
     PRISMDChi2Scan
-    ChiSqSurfacePRISMPred
+    PRISMPred_ChiSqSurface
 )
 
 foreach(SCRPT ${scripts_to_build})

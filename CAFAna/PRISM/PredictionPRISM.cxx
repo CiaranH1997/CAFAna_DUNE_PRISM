@@ -12,6 +12,8 @@
 #include "TDirectory.h"
 #include "TH2.h"
 #include "TObjString.h"
+#include "TSpline.h"
+#include "TCanvas.h"
 
 namespace ana {
 
@@ -114,37 +116,26 @@ Spectrum PredictionPRISM::PredictSyst(osc::IOscCalculator *calc,
 
 void PredictionPRISM::InterpolateFluxMissMatcher() const {
   std::unique_ptr<TH1> match_residual = std::unique_ptr<TH1>(
-      dynamic_cast<TH1 *>(fFluxMatcher->GetLastResidual()->Clone()));
-
+          dynamic_cast<TH1 *>(fFluxMatcher->GetLastResidual()->Clone()));
   fFluxMissWeighter->Clear();
 
-  double miss_Emax = match_residual->GetXaxis()->GetBinUpEdge(
-      match_residual->GetXaxis()->GetNbins());
+  double E_max = match_residual->GetXaxis()->GetBinUpEdge(match_residual->GetXaxis()->GetNbins());
 
-  bool done = false;
-  for (int bin_it = 0; bin_it < fFluxMissWeighter->GetXaxis()->GetNbins();
-       ++bin_it) {
+  std::unique_ptr<TSpline3> spline = std::make_unique<TSpline3>(match_residual.release());
 
-    size_t nint_steps = 100;
-    double bin_low_edge =
-        fFluxMissWeighter->GetXaxis()->GetBinLowEdge(bin_it + 1);
-    double bin_up_edge =
-        fFluxMissWeighter->GetXaxis()->GetBinUpEdge(bin_it + 1);
-    double step = (bin_up_edge - bin_low_edge) / double(nint_steps);
-    double sum = 0;
-    size_t s_it = 0;
-    for (; s_it < nint_steps; ++s_it) {
-      double E = bin_low_edge + double(s_it) * step;
-      if (E > miss_Emax) {
-        done = true;
-        break;
-      }
-      sum += match_residual->Interpolate(E);
+  double E(0);  int bin_it(0);
+  while (E < E_max) {
+    bin_it++;
+    double bin_up_edge = fFluxMissWeighter->GetXaxis()->GetBinUpEdge(bin_it);
+    double bin_low_edge = fFluxMissWeighter->GetXaxis()->GetBinLowEdge(bin_it);
+    int n_steps(100);
+    double step = (bin_up_edge - bin_low_edge) / n_steps;
+    double sum(0);
+    for (int i = 1; i < n_steps; i++) {
+      sum += spline->Eval(bin_low_edge + (i * step));
     }
-    fFluxMissWeighter->SetBinContent(bin_it, sum / double(s_it));
-    if (done) {
-      break;
-    }
+    fFluxMissWeighter->SetBinContent(bin_it, sum / (n_steps - 1));
+    E = fFluxMissWeighter->GetXaxis()->GetBinCenter(bin_it + 1);
   }
 }
 
