@@ -5,6 +5,8 @@ set(scripts_to_build
     PRISMPrediction
     PRISMDChi2Scan
     PRISMPred_ChiSqSurface
+    PRISMPred_SystProf_ChiSqSurface
+    PRISMPred_SystProf_MySurface
 )
 
 foreach(SCRPT ${scripts_to_build})

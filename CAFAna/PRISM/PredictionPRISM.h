@@ -111,7 +111,9 @@ public:
 
   virtual Spectrum Predict(osc::IOscCalculator *calc) const override;
   virtual Spectrum PredictSyst(osc::IOscCalculator *calc,
-                               ana::SystShifts shift = kNoShift) const;
+                               const ana::SystShifts &shift) const override;
+  //virtual Spectrum PredictSyst(osc::IOscCalculator *calc,
+  //                             ana::SystShifts shift = kNoShift) const;
   virtual std::map<PRISMComponent, Spectrum>
   PredictPRISMComponents(osc::IOscCalculator *calc,
                          ana::SystShifts shift = kNoShift) const;

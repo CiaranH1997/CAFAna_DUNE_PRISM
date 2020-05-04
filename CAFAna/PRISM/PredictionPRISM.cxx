@@ -105,7 +105,7 @@ Spectrum PredictionPRISM::Predict(osc::IOscCalculator *calc) const {
 
 //----------------------------------------------------------------------
 Spectrum PredictionPRISM::PredictSyst(osc::IOscCalculator *calc,
-                                      SystShifts shift) const {
+                                      const SystShifts &shift) const {
   std::map<PredictionPRISM::PRISMComponent, Spectrum> Comps =
       PredictPRISMComponents(calc, shift);
 

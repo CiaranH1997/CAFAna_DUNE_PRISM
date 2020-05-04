@@ -10,6 +10,8 @@
 #include "CAFAna/PRISM/PredictionPRISM.h"
 
 #include "CAFAna/Fit/FrequentistSurface.h"
+#include "CAFAna/Fit/IFitter.h"
+#include "CAFAna/Fit/MinuitFitter.h"
 #include "CAFAna/Experiment/SingleSampleExperiment.h"
 
 #include "fhiclcpp/ParameterSet.h"
@@ -168,36 +170,88 @@ void PRISMPrediction(fhicl::ParameterSet const &pred) {
   std::cout << std::endl << "True Osc Parameters: " << std::endl;
   std::cout << "dMsq32 = " << calc->GetDmsq32() << std::endl;
   std::cout << "Theta23 = " << calc->GetTh23() << std::endl;
+  std::cout << "Theta13 = " << calc->GetTh13() << std::endl;
+  std::cout << "dCP = " << calc->GetdCP() << std::endl;
 
-  TMarker *true_point = new TMarker(pow(sin(calc->GetTh23()), 2), calc->GetDmsq32()*1000, kFullCircle);
-
-  // FD MC prediction comparison with FD observed 'data'
-  SingleSampleExperiment exptMC = SingleSampleExperiment(state.FarDet.get(),
-                                                         state.FarDetData->Oscillated(calc, 14, 14).FakeData(pot));
+  std::vector<const ISyst*> allsysts = shift.ActiveSysts();
+  std::vector<const IFitVar*> profOscParams = {&kFitDeltaInPiUnits}; //&kFitSinSq2Theta13
+  std::vector<double> seed_values;
+  for (const IFitVar *v : profOscParams) {
+    seed_values.push_back(v->GetValue(calc));
+  }
 
   // PRISM prediction comparison with FD observed 'data'
-  SingleSampleExperiment exptData = SingleSampleExperiment(state.PRISM.get(),
+  const SingleSampleExperiment exptData = SingleSampleExperiment(state.PRISM.get(),
                                                            state.FarDetData->Oscillated(calc, 14, 14).FakeData(pot));
 
-  FrequentistSurface surfMC = FrequentistSurface(&exptMC, calc,
-                                                 &kFitSinSqTheta23, 30, 0.4, 0.6,
-                                                 &kFitDmSq32Scaled, 30, 2.2, 2.6);
+  const IFitVar* Dmsq32 = &kFitDmSq32Scaled;
+  const IFitVar* ssTh23 = &kFitSinSqTheta23;
+  std::vector<double> Dmsq32_scan;
+  std::vector<double> ssTh23_scan;
 
-  FrequentistSurface surfData = FrequentistSurface(&exptData, calc,
-                                                   &kFitSinSqTheta23, 30, 0.4, 0.6,
-                                                   &kFitDmSq32Scaled, 30, 2.2, 2.6);
+  const int NXSteps(41);
+  const int NYSteps(61);
 
-  TH2 *crit90sigMC = Gaussian90Percent2D(surfMC);
-  TH2 *crit90sigData = Gaussian90Percent2D(surfData);
+  std::unique_ptr<TH2D> scan_hist = std::make_unique<TH2D>(
+    "dchi2_2DScan", "dchi2", NXSteps, 0.42, 0.62, NYSteps, 2.3, 2.6);
+  for (int i = 0; i < NXSteps; i++)
+    ssTh23_scan.emplace_back(scan_hist->GetXaxis()->GetBinCenter(i + 1));
+  for (int i = 0; i < NYSteps; i++)
+    Dmsq32_scan.emplace_back(scan_hist->GetYaxis()->GetBinCenter(i + 1));
 
-  TCanvas *c = new TCanvas("c", "Contours", 800, 600);
-  surfMC.DrawContour(crit90sigMC, kSolid, kBlue);
-  //surfMC.DrawBestFit(kBlue);
-  surfData.DrawContour(crit90sigData, kSolid, kRed);
-  //surfData.DrawBestFit(kRed);
-  true_point->SetMarkerSize(1.5);
-  true_point->SetMarkerColor(kBlack);
-  true_point->Draw();
+  for (const auto &x : ssTh23_scan) {
+    for (const auto &y : Dmsq32_scan) {
+      ssTh23->SetValue(calc, x);
+      Dmsq32->SetValue(calc, y);
+      // set profiled params back to see value each iteration
+      for (unsigned int i = 0; i < seed_values.size(); i++) {
+        profOscParams[i]->SetValue(calc, seed_values[i]);
+      }
+      MinuitFitter fitter(&exptData, profOscParams, allsysts, MinuitFitter::kNormal);
+      fitter.SetFitOpts(MinuitFitter::kNormal);
+      SystShifts bestSysts;
+      const SeedList &seedPts = SeedList();
+      double chi = fitter.Fit(calc, bestSysts, seedPts, {}, MinuitFitter::kVerbose);
+      // fill 2D scan with chisq value
+      scan_hist->Fill(x, y, chi);
+    }
+  }
+  // Get minimum ChiSq value (LL value)
+  double minchi = 1e10;
+  int minx = scan_hist->GetNbinsX()/2;
+  int miny = scan_hist->GetNbinsY()/2;
+  for (int x = 1; x <= scan_hist->GetNbinsX(); ++x) {
+    for (int y = 1; y <= scan_hist->GetNbinsY(); ++y) {
+      const double chi = scan_hist->GetBinContent(x, y);
+      if (chi < minchi) {
+        minchi = chi;
+        minx = x;
+        miny = y;
+      }
+    }
+  }
+  ssTh23->SetValue(calc, scan_hist->GetXaxis()->GetBinCenter(minx));
+  Dmsq32->SetValue(calc, scan_hist->GetYaxis()->GetBinCenter(miny));
+  double BestParamFitX = ssTh23->GetValue(calc);
+  double BestParamFitY = Dmsq32->GetValue(calc);
+  std::cout << "Best fit parameter values: " << BestParamFitX << ", " << BestParamFitY << std::endl;
+  double BestLL = minchi;
+
+  for (int x = 0; x < scan_hist->GetNbinsX(); x++) {
+    for (int y = 0; y < scan_hist->GetNbinsY(); y++) {
+      scan_hist->SetBinContent(x + 1, y + 1, scan_hist->GetBinContent(x + 1, y + 1) - BestLL);
+    }
+  }
+
+  std::cout << std::endl << "Best-Fit Osc Parameters: " << std::endl;
+  std::cout << "dMsq32 = " << calc->GetDmsq32() << std::endl;
+  std::cout << "Theta23 = " << calc->GetTh23() << std::endl;
+  std::cout << "Theta13 = " << calc->GetTh13() << std::endl;
+  std::cout << "dCP = " << calc->GetdCP() << std::endl;
+
+  scan_hist->Write();
+  std::unique_ptr<TCanvas> c = std::make_unique<TCanvas>("c", "Contours", 800, 600);
+  scan_hist->Draw("COLZ");
 
   c->Update();
   c->Write();
