@@ -203,7 +203,7 @@ void PRISMPrediction(fhicl::ParameterSet const &pred) {
 
   const int NSteps(41);
   //std::unique_ptr<TH1D> scan_hist = std::make_unique<TH1D>("dchiSq scan", "dchi", NSteps, 2.3, 2.6);
-  std::unique_ptr<TH1D> scan_hist = std::make_unique<TH1D>("dchiSq scan", "dchi", NSteps, 0.42, 0.62);
+  std::unique_ptr<TH1D> scan_hist = std::make_unique<TH1D>("dchiSq scan", "dchi", NSteps, 0.3, 0.7);
   for (int i = 0; i < NSteps; i++) {
     ssTh23_scan.emplace_back(scan_hist->GetBinCenter(i + 1));
   }
