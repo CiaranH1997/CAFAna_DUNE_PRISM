@@ -12,7 +12,9 @@
 #include "CAFAna/Fit/FrequentistSurface.h"
 #include "CAFAna/Fit/IFitter.h"
 #include "CAFAna/Fit/MinuitFitter.h"
+
 #include "CAFAna/Experiment/SingleSampleExperiment.h"
+#include "CAFAna/Experiment/ReactorExperiment.h"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/make_ParameterSet.h"
@@ -174,15 +176,24 @@ void PRISMPrediction(fhicl::ParameterSet const &pred) {
   std::cout << "dCP = " << calc->GetdCP() << std::endl;
 
   std::vector<const ISyst*> allsysts = shift.ActiveSysts();
-  std::vector<const IFitVar*> profOscParams = {&kFitDeltaInPiUnits}; //&kFitSinSq2Theta13
+  //std::vector<const IFitVar*> profOscParams = {&kFitDeltaInPiUnits}; //&kFitSinSq2Theta13
+  std::vector<const IFitVar*> profOscParams = GetOscVars("deltapi:th13", 1, 0);
   std::vector<double> seed_values;
   for (const IFitVar *v : profOscParams) {
     seed_values.push_back(v->GetValue(calc));
   }
 
   // PRISM prediction comparison with FD observed 'data'
-  const SingleSampleExperiment exptData = SingleSampleExperiment(state.PRISM.get(),
+  const SingleSampleExperiment *exptData = new SingleSampleExperiment(state.PRISM.get(),
                                                            state.FarDetData->Oscillated(calc, 14, 14).FakeData(pot));
+
+  const ReactorExperiment *exptPen = new ReactorExperiment(0.088, 0.003); //NUFit4 Best Fit Constraint
+
+  // Put SSE and Penalty Expt in a MultiExperiment
+  std::vector<const IChiSqExperiment*> Expts;
+  Expts.push_back(exptData);
+  Expts.push_back(exptPen);
+  const MultiExperiment CombExpt = MultiExperiment(Expts);
 
   const IFitVar* Dmsq32 = &kFitDmSq32Scaled;
   const IFitVar* ssTh23 = &kFitSinSqTheta23;
@@ -190,10 +201,10 @@ void PRISMPrediction(fhicl::ParameterSet const &pred) {
   std::vector<double> ssTh23_scan;
 
   const int NXSteps(41);
-  const int NYSteps(61);
+  const int NYSteps(31);
 
   std::unique_ptr<TH2D> scan_hist = std::make_unique<TH2D>(
-    "dchi2_2DScan", "dchi2", NXSteps, 0.42, 0.62, NYSteps, 2.3, 2.6);
+    "dchi2_2DScan", "dchi2", NXSteps, 0.3, 0.7, NYSteps, 2.3, 2.6);
   for (int i = 0; i < NXSteps; i++)
     ssTh23_scan.emplace_back(scan_hist->GetXaxis()->GetBinCenter(i + 1));
   for (int i = 0; i < NYSteps; i++)
@@ -207,7 +218,7 @@ void PRISMPrediction(fhicl::ParameterSet const &pred) {
       for (unsigned int i = 0; i < seed_values.size(); i++) {
         profOscParams[i]->SetValue(calc, seed_values[i]);
       }
-      MinuitFitter fitter(&exptData, profOscParams, allsysts, MinuitFitter::kNormal);
+      MinuitFitter fitter(&CombExpt, profOscParams, allsysts, MinuitFitter::kNormal);
       fitter.SetFitOpts(MinuitFitter::kNormal);
       SystShifts bestSysts;
       const SeedList &seedPts = SeedList();

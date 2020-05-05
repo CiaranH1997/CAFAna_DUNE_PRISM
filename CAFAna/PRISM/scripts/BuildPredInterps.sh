@@ -2,13 +2,13 @@
 
 # Build a pred interp script
 
-INPUTDIR=/home/hasnipl/DP_DATA
+INPUTDIR=/dune/data/users/chasnip/OffAxisCAFs
 
 echo "${INPUTDIR}"
 
-source /home/hasnipl/CLionProjects/CAFAna_DUNE_PRISM/CAFAna/build/Linux/CAFAnaEnv.sh
+source /dune/app/users/chasnip/CH_DUNE_PRISM/lblpwgtools/CAFAna/build/Linux/CAFAnaEnv.sh
 
-MakePRISMPredInterps -o ${INPUTDIR}/PredInterps/PRISMState_EProxy_AltHC_15Apr_Flux_XSec_Syst.root \
+MakePRISMPredInterps -o ${INPUTDIR}/../PredInterps/PRISMState_EProxy_AltHC_16Apr_Flux_XSec_Syst.root \
         -N ${INPUTDIR}/CAF_FHC_PRISM_PROD4-14.root \
         -F ${INPUTDIR}/FD_FHC_nonswap.root \
         --bin-descriptor testopt  \
