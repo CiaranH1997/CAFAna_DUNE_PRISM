@@ -69,8 +69,13 @@ void PRISMPrediction(fhicl::ParameterSet const &pred) {
   int id = 0;
   PRISMExtrapolator fluxmatcher;
 
-  fluxmatcher.InitializeEventRateMatcher(state.NDMatchInterp.get(),
-                                         state.FDMatchInterp.get());
+  //fluxmatcher.InitializeEventRateMatcher(state.NDMatchInterp.get(),
+  //                                       state.FDMatchInterp.get());
+  
+  fluxmatcher.InitializeEventRateMatcher(
+      {{"ND_numode", state.NDMatchInterp.get()},
+       {"FD_numode", state.FDMatchInterp.get()}});
+
   fluxmatcher.SetStoreDebugMatches();
 
   if (!is_fake_spec_run) {

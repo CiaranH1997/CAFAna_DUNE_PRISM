@@ -12,11 +12,11 @@
 
 // To implement LoadFrom()
 #include "CAFAna/Prediction/PredictionNoExtrap.h"
-#include "CAFAna/Prediction/PredictionEnuWeightedNoExtrap.h"
 #include "CAFAna/Prediction/PredictionInterp.h"
 #include "CAFAna/Prediction/PredictionNoOsc.h"
 #include "CAFAna/Prediction/PredictionScaleComp.h"
 #include "CAFAna/Prediction/PredictionNuOnE.h"
+#include "CAFAna/Prediction/PredictionsForPRISM.h"
 
 namespace ana
 {
@@ -30,13 +30,14 @@ namespace ana
     const TString tag = ptag->GetString();
 
     if(tag == "PredictionNoExtrap") return PredictionNoExtrap::LoadFrom(dir);
-    if(tag == "PredictionEnuWeightedNoExtrap") return PredictionEnuWeightedNoExtrap::LoadFrom(dir);
+    if(tag == "PredictionNonSwapNoExtrap") return PredictionNonSwapNoExtrap::LoadFrom(dir);
 
     // Backwards compatibility
     if(tag == "PredictionInterp" ||
        tag == "PredictionInterp2") return PredictionInterp::LoadFrom(dir);
 
     if(tag == "PredictionNoOsc") return PredictionNoOsc::LoadFrom(dir);
+    if(tag == "PredictionFDNoOsc") return PredictionFDNoOsc::LoadFrom(dir);
 
     if(tag == "PredictionScaleComp") return PredictionScaleComp::LoadFrom(dir);
 

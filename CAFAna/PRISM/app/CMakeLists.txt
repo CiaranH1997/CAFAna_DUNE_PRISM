@@ -1,12 +1,14 @@
 set(scripts_to_build
-    MakePRISMPredInterps
-    OffAxisEventRates
-    OffAxisNDCAFCombiner
-    PRISMPrediction
-    PRISMDChi2Scan
-    PRISMPred_ChiSqSurface
-    PRISMPred_SystProf_ChiSqSurface
-    PRISMPred_SystProf_MySurface
+  #  PRISMPred_SystProf_ChiSqSurface
+  #  PRISMPred_SystProf_MySurface
+  MakePRISMPredInterps
+  OffAxisEventRates
+  OffAxisNDCAFCombiner
+  PRISMPrediction
+  PRISMDChi2Scan
+  DumpEventRateTable
+  #  ChiSqSurfacePRISMPred
+  PRISMRegOptimizer
 )
 
 foreach(SCRPT ${scripts_to_build})

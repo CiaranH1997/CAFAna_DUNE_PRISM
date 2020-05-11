@@ -123,6 +123,8 @@ add_subdirectory(bin)
 
 add_subdirectory(scripts)
 
+add_subdirectory(fcl)
+
 configure_file(cmake/CAFAnaEnv.sh.in
   ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CAFAnaEnv.sh @ONLY)
 
@@ -147,11 +149,9 @@ install(
 
 install(
   PROGRAMS
-    ${CMAKE_SOURCE_DIR}/cafe_dune
+    ${CMAKE_SOURCE_DIR}/cafe
   DESTINATION
     bin
-  RENAME
-    cafe
   )
 
 install(
@@ -163,9 +163,7 @@ install(
 
 install(
   FILES
-    ${CMAKE_SOURCE_DIR}/load_libs_dune.C
+    ${CMAKE_SOURCE_DIR}/load_libs.C
   DESTINATION
     ${CMAKE_INSTALL_PREFIX}/
-  RENAME
-    load_libs.C
   )

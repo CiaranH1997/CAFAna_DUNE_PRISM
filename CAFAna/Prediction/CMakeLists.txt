@@ -4,12 +4,12 @@ set(Prediction_implementation_files
   PredictionGenerator.cxx
   PredictionInterp.cxx
   PredictionNoExtrap.cxx
-  PredictionEnuWeightedNoExtrap.cxx
   PredictionNoOsc.cxx
   PredictionScaleComp.cxx
   PredictionXSecDiag.cxx
   PredictionNuOnE.cxx
-  PredictionInterpKernel.cxx)
+  PredictionInterpKernel.cxx
+  PredictionsForPRISM.cxx)
 
 set(Prediction_header_files
   IPrediction.h
@@ -17,12 +17,12 @@ set(Prediction_header_files
   PredictionGenerator.h
   PredictionInterp.h
   PredictionNoExtrap.h
-  PredictionEnuWeightedNoExtrap.h
   PredictionNoOsc.h
   PredictionScaleComp.h
   PredictionXSecDiag.h
   PredictionNuOnE.h
-  PredictionInterpKernel.h)
+  PredictionInterpKernel.h
+  PredictionsForPRISM.h)
 
 add_library(CAFAnaPrediction SHARED ${Prediction_implementation_files})
 target_link_libraries(CAFAnaPrediction)

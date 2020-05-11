@@ -132,7 +132,8 @@ struct fileSummary {
 void OffAxisNDCAFCombiner(
     std::string InputFilePatterns, std::string OutputFileName,
     bool CombiningCombinedCAFs = false, std::string cafTreeName = "cafTree",
-    bool preSelect = false, bool justDoSummaryTree = false,
+    bool preSelect = false, bool justDoSummaryTree = false, double min_m = -4,
+    double max_m = 40, double step_m = 0.25,
     size_t NMaxEvents = std::numeric_limits<size_t>::max()) {
 
   if (CombiningCombinedCAFs && preSelect) {
@@ -189,17 +190,16 @@ void OffAxisNDCAFCombiner(
     }
     std::copy(files.begin(), files.end(), std::back_inserter(CAFs[dir]));
     NFiles += files.size();
+    std::cout << "[INFO]: Added " << files.size() << " files, for a total of "
+              << NFiles << std::endl;
   }
 
-  if (!CAFs.size()) {
+  if (!NFiles) {
     std::cout << "[WARN]: Found no matching files." << std::endl;
     return;
   }
 
-  double min_m = -4;
-  double max_m = 40;
-  double step_m = 0.25; // 25 cm
-  double offset_m = 0;  // (step_m / 2.0)
+  double offset_m = 0; // (step_m / 2.0)
   size_t NStep = (max_m - min_m) / step_m;
 
   TH1D *POTExposure =
@@ -208,7 +208,8 @@ void OffAxisNDCAFCombiner(
   POTExposure->SetDirectory(nullptr);
   TH2D *POTExposure_stop =
       new TH2D("POTExposure_stop", ";OffAxisPosition (m);Exposure (POT)", NStep,
-               min_m - offset_m, max_m - offset_m, 10, -2, 38);
+               min_m - offset_m, max_m - offset_m, NStep, min_m - offset_m,
+               max_m - offset_m);
   POTExposure_stop->SetDirectory(nullptr);
   TH1D *FileExposure =
       new TH1D("FileExposure", ";OffAxisPosition (m);Exposure (NFiles)", NStep,
@@ -248,6 +249,14 @@ void OffAxisNDCAFCombiner(
     FileSummaryTree->Branch("fileName", &fs.fileName);
     FileSummaryTree->SetDirectory(nullptr);
   }
+
+  bool Flipdetx = false;
+
+  if (getenv("CAFANA_FLIP_DET_X") &&
+      (std::atoi(getenv("CAFANA_FLIP_DET_X")) == 1)) {
+    Flipdetx = true;
+  }
+
   size_t NPrevOffAxisWeightFriendEntries = 0;
   size_t fctr = 0;
   for (auto dir_files : CAFs) {
@@ -281,6 +290,11 @@ void OffAxisNDCAFCombiner(
       f_caf->SetBranchAddress("vtx_y", &vtx_y);
       f_caf->SetBranchAddress("vtx_z", &vtx_z);
       f_caf->GetEntry(0);
+
+      if (Flipdetx) {
+        det_x = -det_x;
+      }
+
       double file_det_x = det_x;
 
       if (CombiningCombinedCAFs) {
@@ -352,24 +366,24 @@ void OffAxisNDCAFCombiner(
         }
         det_x_files[file_det_x]++;
 
-        double det_min_m = -3;
-        double det_max_m = 3;
+        double vtx_min_m = -3;
+        double vtx_max_m = 3;
         double average_step = 1E-6;
-        size_t det_steps = (det_max_m - det_min_m) / (step_m * average_step);
+        size_t vtx_steps = (vtx_max_m - vtx_min_m) / (step_m * average_step);
 
-        for (size_t pos_it = 0; pos_it < det_steps; ++pos_it) {
-          double det_x_pos_m = det_min_m + pos_it * (step_m * average_step);
+        for (size_t pos_it = 0; pos_it < vtx_steps; ++pos_it) {
+          double vtx_x_pos_m = vtx_min_m + pos_it * (step_m * average_step);
 
-          FileExposure->Fill(det_x_pos_m + det_x, average_step * nmeta_ents);
+          FileExposure->Fill(vtx_x_pos_m + det_x, average_step * nmeta_ents);
 
-          if (!ana::IsInNDFV(det_x_pos_m * 1E2, /*Dummy y_pos_m*/ 0,
+          if (!ana::IsInNDFV(vtx_x_pos_m * 1E2, /*Dummy y_pos_m*/ 0,
                              /*Dummy z_pos_m*/ 150)) {
             // std::cout << "out of FV: " << (det_x_pos_m + det_x) << std::endl;
             continue;
           }
 
-          POTExposure->Fill(det_x_pos_m + det_x, average_step * file_pot);
-          POTExposure_stop->Fill(det_x_pos_m + det_x, det_x,
+          POTExposure->Fill(vtx_x_pos_m + det_x, average_step * file_pot);
+          POTExposure_stop->Fill(vtx_x_pos_m + det_x, det_x,
                                  average_step * file_pot);
         }
 
@@ -380,6 +394,9 @@ void OffAxisNDCAFCombiner(
           for (size_t e_it = 0; e_it < nevs; ++e_it) {
             if (preSelect) {
               f_caf->GetEntry(e_it);
+              if (Flipdetx) {
+                det_x = -det_x;
+              }
               if (file_det_x != det_x) {
                 std::cout << "[ERROR]: In file " << file_name
                           << " found an event with det_x = " << det_x
@@ -395,6 +412,10 @@ void OffAxisNDCAFCombiner(
                 det_x, perPOT, SliceMassCorrector.GetWeight(vtx_x));
           }
           if (preSelect) {
+            std::cout << "\t-FV selection : NInFile: "
+                      << double(EventPOTEventFiles.size() -
+                                NPrevOffAxisWeightFriendEntries)
+                      << ", NInFile: " << nevs << std::endl;
             std::cout << "\t-FV selection efficiency: "
                       << (double(EventPOTEventFiles.size() -
                                  NPrevOffAxisWeightFriendEntries) /
@@ -445,15 +466,18 @@ void OffAxisNDCAFCombiner(
 
   if (!justDoSummaryTree) {
     std::cout << "[INFO]: Copying caf tree..." << std::endl;
-    TTree *treecopy =
-        caf->CloneTree(preSelect ? 0 : NMaxEvents, preSelect ? "" : "fast");
-    treecopy->SetName("cafTree");
+    bool canfast = !preSelect && !Flipdetx;
+    TTree *treecopy = nullptr;
 
-    if (preSelect) {
-      double vtx_x, vtx_y, vtx_z;
+    if (!canfast) {
+      double vtx_x, vtx_y, vtx_z, det_x;
       caf->SetBranchAddress("vtx_x", &vtx_x);
       caf->SetBranchAddress("vtx_y", &vtx_y);
       caf->SetBranchAddress("vtx_z", &vtx_z);
+      caf->SetBranchAddress("det_x", &det_x);
+      treecopy = caf->CloneTree(0, "");
+      treecopy->SetName("cafTree");
+
       size_t nents = std::min(NMaxEvents, size_t(caf->GetEntries()));
       ana::Progress preselprog("Copy with selection progress.");
       for (size_t ent_it = 0; ent_it < nents; ++ent_it) {
@@ -461,12 +485,18 @@ void OffAxisNDCAFCombiner(
           preselprog.SetProgress(double(ent_it) / double(nents));
         }
         caf->GetEntry(ent_it);
-        if (!ana::IsInNDFV(vtx_x, vtx_y, vtx_z)) {
+        if (Flipdetx) {
+          det_x = -det_x;
+        }
+        if (preSelect && !ana::IsInNDFV(vtx_x, vtx_y, vtx_z)) {
           continue;
         }
         treecopy->Fill();
       }
       preselprog.Done();
+    } else {
+      treecopy = caf->CloneTree(NMaxEvents, "fast");
+      treecopy->SetName("cafTree");
     }
     delete caf;
 
@@ -592,9 +622,13 @@ int main(int argc, char const *argv[]) {
   std::string cafTreeName = (argc >= 5) ? argv[4] : "cafTree";
   bool preSelect = (argc >= 6) ? strToBool(argv[5]) : false;
   bool justDoSummaryTree = (argc >= 7) ? strToBool(argv[6]) : false;
-  size_t NMaxEvents = (argc >= 8) ? size_t(std::strtol(argv[7], nullptr, 10))
-                                  : std::numeric_limits<size_t>::max();
+  double min_m = (argc >= 8) ? std::atof(argv[7]) : -4;
+  double max_m = (argc >= 9) ? std::atof(argv[8]) : 40;
+  double step_m = (argc >= 10) ? std::atof(argv[9]) : 0.25;
+  size_t NMaxEvents = (argc >= 11) ? size_t(std::strtol(argv[10], nullptr, 10))
+                                   : std::numeric_limits<size_t>::max();
   OffAxisNDCAFCombiner(InputFilePattern, OutputFileName, CombiningCombinedCAFs,
-                       cafTreeName, preSelect, justDoSummaryTree, NMaxEvents);
+                       cafTreeName, preSelect, justDoSummaryTree, min_m, max_m,
+                       step_m, NMaxEvents);
 }
 #endif
