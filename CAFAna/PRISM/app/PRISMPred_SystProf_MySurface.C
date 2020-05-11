@@ -200,11 +200,13 @@ void PRISMPrediction(fhicl::ParameterSet const &pred) {
   std::vector<double> Dmsq32_scan;
   std::vector<double> ssTh23_scan;
 
-  const int NXSteps(41);
+
+  const int NXSteps(31);
   const int NYSteps(31);
 
   std::unique_ptr<TH2D> scan_hist = std::make_unique<TH2D>(
-    "dchi2_2DScan", "dchi2", NXSteps, 0.3, 0.7, NYSteps, 2.3, 2.6);
+    "dchi2_2DScan", "dchi2", NXSteps, 0.35, 0.65, NYSteps, 2.3, 2.6);
+
   for (int i = 0; i < NXSteps; i++)
     ssTh23_scan.emplace_back(scan_hist->GetXaxis()->GetBinCenter(i + 1));
   for (int i = 0; i < NYSteps; i++)
