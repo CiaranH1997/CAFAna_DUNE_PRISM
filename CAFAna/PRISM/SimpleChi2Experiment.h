@@ -6,6 +6,8 @@
 
 #include "CAFAna/Prediction/IPrediction.h"
 
+#include "CAFAna/Core/HistCache.h"
+
 namespace ana {
 class SimpleChi2Experiment : public IChiSqExperiment {
 public:

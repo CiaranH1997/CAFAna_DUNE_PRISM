@@ -5,9 +5,14 @@
 #include "CAFAna/PRISM/PRISMExtrapolator.h"
 #include "CAFAna/PRISM/PRISMUtils.h"
 #include "CAFAna/PRISM/PredictionPRISM.h"
+#include "CAFAna/PRISM/SimpleChi2Experiment.h"
+
+#include "CAFAna/Experiment/ReactorExperiment.h"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/make_ParameterSet.h"
+
+#include "TCanvas.h"
 
 using namespace ana;
 using namespace PRISM;
@@ -242,6 +247,104 @@ void PRISMPrediction(fhicl::ParameterSet const &pred) {
         run_plan_nub_h->SetDirectory(nullptr);
       }
     }
+
+    std::cout << std::endl << "True Osc Parameters: " << std::endl;
+    std::cout << "dMsq32 = " << calc->GetDmsq32() << std::endl;
+    std::cout << "Theta23 = " << calc->GetTh23() << std::endl;
+    std::cout << "Theta13 = " << calc->GetTh13() << std::endl;
+    std::cout << "dCP = " << calc->GetdCP() << std::endl;
+
+    std::vector<const ISyst*> allsysts = shift.ActiveSysts();
+    //std::vector<const IFitVar*> profOscParams = {&kFitDeltaInPiUnits}; //&kFitSinSq2Theta13
+    std::vector<const IFitVar*> profOscParams = GetOscVars("deltapi:th13", 1, 0);
+    std::vector<double> seed_values;
+    for (const IFitVar *v : profOscParams) {
+      seed_values.push_back(v->GetValue(calc));
+    }
+  
+    // PRISM prediction comparison with FD observed 'data'
+    const SingleSampleExperiment *exptData = new SingleSampleExperiment(state.PRISM.get(),
+      DataSpectra.back().FakeData(POT_FD));
+
+    //const PRISMChi2Experiment *exptData = new PRISMChi2Experiment(state.PRISM.get(),
+    //  DataSpectra.back().FakeData(POT_FD), false, POT_FD, ch.second, {0, 10});
+
+    const ReactorExperiment *exptPen = new ReactorExperiment(0.088, 0.003); 
+    //NUFit4 BestFit Constraint
+    //Put SSE and Penalty Expt in a MultiExperiment
+    std::vector<const IChiSqExperiment*> Expts;
+    Expts.push_back(exptData);
+    Expts.push_back(exptPen);
+    const MultiExperiment CombExpt = MultiExperiment(Expts);
+    const IFitVar* Dmsq32 = &kFitDmSq32Scaled;
+    const IFitVar* ssTh23 = &kFitSinSqTheta23;
+    std::vector<double> Dmsq32_scan;
+    std::vector<double> ssTh23_scan;
+    const int NXSteps(31);
+    const int NYSteps(26);
+  
+    std::unique_ptr<TH2D> scan_hist = std::make_unique<TH2D>(
+      "dchi2_2DScan2", "dchi2", NXSteps, 0.35, 0.65, NYSteps, 2.35, 2.6);
+  
+    for (int i = 0; i < NXSteps; i++)
+      ssTh23_scan.emplace_back(scan_hist->GetXaxis()->GetBinCenter(i + 1));
+    for (int i = 0; i < NYSteps; i++)
+      Dmsq32_scan.emplace_back(scan_hist->GetYaxis()->GetBinCenter(i + 1));
+
+    for (const auto &x : ssTh23_scan) {
+      for (const auto &y : Dmsq32_scan) {
+        ssTh23->SetValue(calc, x);
+        Dmsq32->SetValue(calc, y);
+        // set profiled params back to see value each iteration
+        for (unsigned int i = 0; i < seed_values.size(); i++) {
+          profOscParams[i]->SetValue(calc, seed_values[i]);
+        }
+        MinuitFitter fitter(&CombExpt, profOscParams, allsysts, MinuitFitter::kNormal);
+        fitter.SetFitOpts(MinuitFitter::kNormal);
+        SystShifts bestSysts;
+        const SeedList &seedPts = SeedList();
+        double chi = fitter.Fit(calc, bestSysts, seedPts, {}, MinuitFitter::kVerbose);
+        // fill 2D scan with chisq value  
+        scan_hist->Fill(x, y, chi); 
+      }
+    }
+    // Get minimum ChiSq value (LL value)
+    double minchi = 1e10;
+    int minx = scan_hist->GetNbinsX()/2;
+    int miny = scan_hist->GetNbinsY()/2;
+    for (int x = 1; x <= scan_hist->GetNbinsX(); ++x) {
+      for (int y = 1; y <= scan_hist->GetNbinsY(); ++y) {
+        const double chi = scan_hist->GetBinContent(x, y);
+        if (chi < minchi) {
+          minchi = chi;
+          minx = x;
+          miny = y;
+        }
+      }
+    }
+ 
+    ssTh23->SetValue(calc, scan_hist->GetXaxis()->GetBinCenter(minx));
+    Dmsq32->SetValue(calc, scan_hist->GetYaxis()->GetBinCenter(miny));
+    double BestParamFitX = ssTh23->GetValue(calc);
+    double BestParamFitY = Dmsq32->GetValue(calc);
+    std::cout << "Bestfit parameter values: " << BestParamFitX << ", " << BestParamFitY << std::endl;
+    double BestLL = minchi;
+    for (int x = 0; x < scan_hist->GetNbinsX(); x++) {
+      for (int y = 0; y < scan_hist->GetNbinsY(); y++) {
+        scan_hist->SetBinContent(x + 1, y + 1, scan_hist->GetBinContent(x + 1, y + 1) - BestLL);
+      }
+    }
+    std::cout << std::endl << "Best-Fit Osc Parameters: " << std::endl;
+    std::cout << "dMsq32 = " << calc->GetDmsq32() << std::endl;
+    std::cout << "Theta23 = " << calc->GetTh23() << std::endl;
+    std::cout << "Theta13 = " << calc->GetTh13() << std::endl;
+    std::cout << "dCP = " << calc->GetdCP() << std::endl;
+    //scan_hist->Write();
+    chan_dir->WriteTObject(scan_hist.release(), "dChi2Scan");
+    //std::unique_ptr<TCanvas> c = std::make_unique<TCanvas>("c", "Contours", 800, 600);
+    //scan_hist->Draw("COLZ");
+    //c->Update();
+    //c->Write();
   }
 
   f.Write();

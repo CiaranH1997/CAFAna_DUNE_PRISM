@@ -1,0 +1,45 @@
+#include "AsimovPoints.fcl"
+#include "FitChannels.fcl"
+#include "RunPlans.fcl"
+#include "ScanDefinitions.fcl"
+#include "NuisanceParameters.fcl"
+
+BasicPred: {
+	#state_file: /dune/data/users/chasnip/NewCode/PredInterps/PRISMState_EProxy_AltHC_11May.root
+	output_file: [/dune/data/users/chasnip/NewCode/PRISMPredictions/PRISMPred_EProxy_AltHC_StatSurf_13May.root, UPDATE]
+	projection_name: EProxy
+
+	use_PRISM: true
+    POT_years: 3.5
+
+    PRISM: {
+    	match_conditioning: [
+        	{
+            	chan: @local::FitChannels.Numu_disp
+                energy_range: [0, 8]
+                reg_factor: 1E-16
+                is_fake_spec_run: true
+            }
+        ]
+
+        set_ND_errors_from_rate: false
+
+        RunPlans: {
+        	numode: @local::RunPlans.prodlike
+        }
+
+		write_debug: true
+	}
+                                                                                                    
+	samples: @local::FitChannels.Numu_disp
+}
+
+predictions: [
+	{
+		@table::BasicPred
+		state_file: /dune/data/users/chasnip/NewCode/PredInterps/PRISMState_EProxy_AltHC_12May.root
+		output_dir: "AltHC_EProxy_numu_SSE"
+		#samples: @local::FitChannels.Numu_disp
+	}
+]
+
