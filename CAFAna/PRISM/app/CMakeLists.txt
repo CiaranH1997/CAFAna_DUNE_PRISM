@@ -9,6 +9,7 @@ set(scripts_to_build
   DumpEventRateTable
   #  ChiSqSurfacePRISMPred
   PRISMRegOptimizer
+  PRISMPred_ChiSqSurf
 )
 
 foreach(SCRPT ${scripts_to_build})
