@@ -91,7 +91,7 @@ EffectiveFluxUncertaintyHelper const &EffectiveFluxUncertaintyHelper::Get() {
   if (!globalFluxHelper) {
     globalFluxHelper = new EffectiveFluxUncertaintyHelper();
     globalFluxHelper->Initialize(ana::FindCAFAnaDir() +
-                                 "/Systs/flux_shifts_OffAxis.root");
+                                 "/Systs/flux_shifts_OffAxis_new.root");
   }
   return *globalFluxHelper;
 }
@@ -115,7 +115,38 @@ void EffectiveFluxUncertaintyHelper::Initialize(std::string const &filename) {
   std::string nuebar_species_tag = "nuebar";
 
   std::string input_file = filename;
-  std::string input_dir = IsCAFAnaFormat ? "" : "EffectiveFluxParameters";
+  //std::string input_dir = IsCAFAnaFormat ? "" : "EffectiveFluxParameters";
+  std::string input_dir = IsCAFAnaFormat ? "" : "FluxParameters";
+
+  TDirectory *ogDir = gDirectory;
+
+  TFile *inpF = CheckOpenFile(filename);
+
+  TDirectory *d = inpF->GetDirectory(input_dir.c_str());
+
+  std::vector<std::string> param_names;
+  TList *param_names_list = nullptr;
+  d->GetObject("param_names", param_names_list);
+  if (!param_names_list) {
+    std::cout << "[ERROR]: Failed to find param_name list in TDirectory: "
+              << input_dir << " in file: " << input_file
+              << " and was passed no param_names FHiCL list to try to load."
+              << std::endl;
+    abort();
+  }
+
+  for (size_t p_it = 0;
+       p_it < std::min(NParams, size_t(param_names_list->GetSize())); ++p_it) {
+    param_names.push_back(
+      static_cast<TObjString *>(param_names_list->At(p_it))->String().Data());
+  }
+
+  inpF->Close();
+  delete inpF;
+
+  if (ogDir) {
+    ogDir->cd();
+  }
 
   for (size_t p_it = 0; p_it < NParams; ++p_it) {
     NDTweaks.push_back(std::vector<TH1 *>());
@@ -123,7 +154,9 @@ void EffectiveFluxUncertaintyHelper::Initialize(std::string const &filename) {
 
     std::stringstream input_dir_i("");
     input_dir_i << input_dir << (input_dir.size() ? "/" : "")
-                << (IsCAFAnaFormat ? "syst" : "param_") << p_it << "/";
+                << param_names[p_it] << "/";
+    /*input_dir_i << input_dir << (input_dir.size() ? "/" : "")
+                << (IsCAFAnaFormat ? "syst" : "param_") << p_it << "/";*/
 
     size_t NHistsLoaded = 0;
     int nucf = kND_numu_numode;

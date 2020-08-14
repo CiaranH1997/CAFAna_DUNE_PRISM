@@ -2,22 +2,18 @@
 
 # Build a pred interp script
 
-INPUTDIR=/dune/data/users/chasnip/OffAxisCAFs
+INPUTDIR=/home/hasnipl/DP_DATA
 
 echo "${INPUTDIR}"
 
-source /dune/app/users/chasnip/CH_DUNE_PRISM/lblpwgtools/CAFAna/build/Linux/CAFAnaEnv.sh
+source /home/hasnipl/CLionProjects/NewCode_CAFAna/CAFAna_DUNE_PRISM/CAFAna/build/Linux/CAFAnaEnv.sh
 
-MakePRISMPredInterps -o ${INPUTDIR}/../PredInterps/PRISMState_EProxy_AltHC_16Apr_Flux_XSec_Syst.root \
-        -N ${INPUTDIR}/CAF_FHC_PRISM_PROD4-14.root \
-        -F ${INPUTDIR}/FD_FHC_nonswap.root \
-        --bin-descriptor testopt  \
-        -A EProxy --syst-descriptor "nov17flux:nodet" \
-        --FakeSR "${INPUTDIR}/HCRat.root;bla" \
+MakePRISMPredInterps -o ${INPUTDIR}/NewCode_PredInterps/PRISMState_EProxy_AltHC_NewProd_10Aug.root \
+        -N-nu ${INPUTDIR}/ND_CAF_FHC_FVCut_NewProd8Aug.root \
+        -F-nu ${INPUTDIR}/FD_FHC_nonswap.root \
+        --bin-descriptor testopt --no-fakedata-dials \
+        -A EProxy --syst-descriptor "nosyst" \
+        --FakeSR "OnAxis280kA" --no-fakedata-dials \
         --OA-bin-descriptor "OneNegXBin"
 
-#--no-fakedata-dials
-#--syst-descriptor fakedata
-#--NueSwap ${INPUTDIR}/FD_FHC_nueswap.root \
-#--TauSwap ${INPUTDIR}/FD_FHC_tauswap.root \
-#--PRISM-fake-data "MissingProtonFakeData"
+

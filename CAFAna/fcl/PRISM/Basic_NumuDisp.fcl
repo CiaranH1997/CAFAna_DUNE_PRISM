@@ -5,12 +5,12 @@
 #include "NuisanceParameters.fcl"
 
 BasicPred: {
-	#state_file: /dune/data/users/chasnip/NewCode/PredInterps/PRISMState_EProxy_AltHC_11May.root
-	output_file: [/dune/data/users/chasnip/NewCode/PRISMPredictions/PRISMPred_EProxy_AltHC_StatSurf_13May.root, UPDATE]
+	output_file: [/home/hasnipl/DP_DATA/NewCode_PRISMPredictions/PRISMPred_EProxy_NewProd_10Aug.root, "UPDATE"]
+	state_file: /home/hasnipl/DP_DATA/NewCode_PredInterps/PRISMState_EProxy_AltHC_NewProd_10Aug.root
 	projection_name: EProxy
 
 	use_PRISM: true
-    POT_years: 3.5
+    POT_years: 1
 
     PRISM: {
     	match_conditioning: [
@@ -22,10 +22,10 @@ BasicPred: {
             }
         ]
 
-        set_ND_errors_from_rate: false
+        set_ND_errors_from_rate: true
 
         RunPlans: {
-        	numode: @local::RunPlans.prodlike
+        	numode: @local::RunPlans.guess
         }
 
 		write_debug: true
@@ -34,12 +34,16 @@ BasicPred: {
 	samples: @local::FitChannels.Numu_disp
 }
 
+
 predictions: [
+
 	{
-		@table::BasicPred
-		state_file: /dune/data/users/chasnip/NewCode/PredInterps/PRISMState_EProxy_AltHC_12May.root
-		output_dir: "AltHC_EProxy_numu_SSE"
-		#samples: @local::FitChannels.Numu_disp
-	}
-]
+        @table::BasicPred
+        output_dir: "numu_nom"
+    },
+
+]	
+
+scans[0].output_file[1]: "RECREATE"
+
 

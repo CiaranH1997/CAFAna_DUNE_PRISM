@@ -189,6 +189,7 @@ TH1 const *PRISMExtrapolator::GetFarMatchCoefficients(
     for (int row_it = 0; row_it < (NCoeffs - 1); ++row_it) {
       // Penalize neighbouring coefficient difference by cond.CoeffRegVector[it]
       RegMatrix(row_it, row_it) = cond.RegFactor;
+      if (fNoRegAltHC && row_it == 0) RegMatrix(row_it, row_it) = 0;
       RegMatrix(row_it, row_it + 1) =
           -cond.RegFactor * cond.CoeffRegVector[row_it];
     }

@@ -28,6 +28,7 @@
 #include "CAFAna/Vars/FitVars.h"
 
 #include "CAFAna/Systs/DUNEFluxSysts.h"
+#include "CAFAna/Systs/DUNEFluxSystPRISM.h"
 #include "CAFAna/Systs/EnergySysts.h"
 #include "CAFAna/Systs/FDRecoSysts.h"
 #include "CAFAna/Systs/NDRecoSysts.h"
@@ -196,8 +197,9 @@ void RemoveSysts(std::vector<const ISyst *> &systlist,
                  systlist.end());
 }
 
-std::vector<const ISyst *> GetListOfSysts(bool fluxsyst_Nov17, bool xsecsyst,
-                                          bool detsyst, bool useND, bool useFD,
+std::vector<const ISyst *> GetListOfSysts(bool fluxsyst_PRISM, bool fluxsyst_Nov17,
+                                          bool xsecsyst, bool detsyst,
+                                          bool useND, bool useFD,
                                           bool useNueOnE, bool useFakeDataDials,
                                           bool fluxsyst_CDR, int NFluxSysts,
                                           bool removeFDNonFitDials) {
@@ -217,6 +219,12 @@ std::vector<const ISyst *> GetListOfSysts(bool fluxsyst_Nov17, bool xsecsyst,
     std::vector<const ISyst *> fluxlist_CDR =
         GetDUNEFluxSysts(NFluxSysts, fluxXsecPenalties, true);
     systlist.insert(systlist.end(), fluxlist_CDR.begin(), fluxlist_CDR.end());
+  }
+
+  if (fluxsyst_PRISM) {
+    std::vector<const ISyst *> fluxlist_PRISM =
+      GetDUNEFluxSystsPRISM(NFluxSysts, fluxXsecPenalties);
+    systlist.insert(systlist.end(), fluxlist_PRISM.begin(), fluxlist_PRISM.end());
   }
 
   if (detsyst) {
@@ -275,6 +283,7 @@ std::vector<const ISyst *> GetListOfSysts(std::string systString, bool useND,
 
   // Now defaults to true!
   bool detsyst = true;
+  bool fluxsyst_PRISM = true;
   bool fluxsyst_Nov17 = (GetAnaVersion() == kV3) ? false : true;
   bool fluxsyst_CDR = (GetAnaVersion() == kV3) ? true : false;
   bool xsecsyst = true;
@@ -326,6 +335,7 @@ std::vector<const ISyst *> GetListOfSysts(std::string systString, bool useND,
       xsecsyst = false;
       fluxsyst_Nov17 = false;
       fluxsyst_CDR = false;
+      fluxsyst_PRISM = false;
       detsyst = false;
     }
 
@@ -337,14 +347,22 @@ std::vector<const ISyst *> GetListOfSysts(std::string systString, bool useND,
     if (syst == "noflux") {
       fluxsyst_CDR = false;
       fluxsyst_Nov17 = false;
+      fluxsyst_PRISM = false;
+    }
+    if (syst == "OAflux") {
+      fluxsyst_CDR = false;
+      fluxsyst_Nov17 = false;
+      fluxsyst_PRISM = true;
     }
     if (syst == "cdrflux") {
       fluxsyst_CDR = true;
       fluxsyst_Nov17 = false;
+      fluxsyst_PRISM = false;
     }
     if (syst == "nov17flux") {
       fluxsyst_CDR = false;
       fluxsyst_Nov17 = true;
+      fluxsyst_PRISM = false;
     }
     if (syst == "fakedata") {
       useFakeData = true;
@@ -372,8 +390,8 @@ std::vector<const ISyst *> GetListOfSysts(std::string systString, bool useND,
 
   // Okay, now get the list, and start from there...
   std::vector<const ISyst *> namedList =
-      GetListOfSysts(fluxsyst_Nov17, xsecsyst, detsyst, useND, useFD, useNueOnE,
-                     useFakeData, fluxsyst_CDR, NFluxSysts);
+      GetListOfSysts(fluxsyst_PRISM, fluxsyst_Nov17, xsecsyst, detsyst, useND, useFD,
+                     useNueOnE, useFakeData, fluxsyst_CDR, NFluxSysts);
 
   // Now do something REALLY FUNKY. Remove specific dials from the list we
   // already have Need to allow single dials, and a few specific groups...

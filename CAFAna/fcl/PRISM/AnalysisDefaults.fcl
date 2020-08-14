@@ -17,25 +17,25 @@ DefaultPred: {
         match_conditioning: [
             {
                 chan: @local::FitChannels.Numu_disp
-                energy_range: [0, 6]
+                energy_range: [0, 8]
                 reg_factor: 1.2E-17
                 is_fake_spec_run: true
             },
             {
                 chan: @local::FitChannels.Numubar_disp
-                energy_range: [0, 6]
+                energy_range: [0, 8]
                 reg_factor: 2.1E-17
                 is_fake_spec_run: true
             },
             {
                 chan: @local::FitChannels.Nue_app
-                energy_range: [0, 6]
+                energy_range: [0, 8]
                 reg_factor: 1.21E-17
                 is_fake_spec_run: true
             },
             {
                 chan: @local::FitChannels.Nuebar_app
-                energy_range: [0, 6]
+                energy_range: [0, 8]
                 reg_factor: 1.91E-17
                 is_fake_spec_run: true
             }
@@ -49,7 +49,7 @@ DefaultPred: {
             nubmode: @local::RunPlans.flat
         }
 
-        write_debug: false
+        write_debug: true
     }
 
     samples: @local::FitChannels.Numu_disp

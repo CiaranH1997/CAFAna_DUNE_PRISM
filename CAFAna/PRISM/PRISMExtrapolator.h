@@ -96,7 +96,7 @@ public:
   }
 
   // Doing a fake special run so no reg on Alt HC
-  //void SetNoRegAltHC(bool v = true) { fNoRegAltHC = v; }
+  void SetNoRegAltHC(bool v = true) { fNoRegAltHC = v; }
 
 protected:
   std::vector<std::unique_ptr<TH2>> NDOffAxisPrediction;
@@ -113,6 +113,8 @@ protected:
 
   mutable std::unique_ptr<TH1> fLastMatch;
   mutable std::unique_ptr<TH1> fLastGaussMatch;
+
+  bool fNoRegAltHC = false;
 
   bool fStoreDebugMatches;
   mutable std::map<std::string, std::unique_ptr<TH1>> fDebugTarget;

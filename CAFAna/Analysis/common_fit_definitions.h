@@ -63,8 +63,9 @@ void RemoveSysts(std::vector<const ana::ISyst *> &systlist,
                  std::vector<std::string> const &namesToRemove);
 
 std::vector<const ana::ISyst *>
-GetListOfSysts(bool fluxsyst_Nov17 = true, bool xsecsyst = true,
-               bool detsyst = true, bool useND = true, bool useFD = true,
+GetListOfSysts(bool fluxsyst_PRISM = true, bool fluxsyst_Nov17 = true,
+               bool xsecsyst = true, bool detsyst = true,
+               bool useND = true, bool useFD = true,
                bool useNueOnE = false, bool useFakeDataDials = true,
                bool fluxsyst_CDR = true,
                int NFluxSysts = NFluxParametersToAddToStatefile,

@@ -1,5 +1,6 @@
 set(Systs_implementation_files
   DUNEFluxSysts.cxx
+  DUNEFluxSystPRISM.cxx
   DUNENDSysts.cxx
   DUNEXSecSysts.cxx
   DUNEXSecSystsPCA.cxx
@@ -15,6 +16,7 @@ set(Systs_implementation_files
 
 set(Systs_header_files
   DUNEFluxSysts.h
+  DUNEFluxSystPRISM.h
   DUNENDSysts.h
   DUNEXSecSysts.h
   DUNEXSecSystsPCA.h
@@ -59,6 +61,7 @@ set(SYST_INPUT_ROOT_FILES
   flux_shifts_CDR.root
   flux_shifts_Nov17.root
   flux_shifts_OffAxis.root
+  flux_shifts_OffAxis_new.root
   xsec_shifts.root
   modelComp.root
   ND_eff_syst.root

@@ -108,6 +108,7 @@ void PRISMPrediction(fhicl::ParameterSet const &pred) {
                                                           {0, 4});
       bool chan_is_fake_spec_run =
           channel_conditioning.get<bool>("is_fake_spec_run", false);
+      if (chan_is_fake_spec_run) fluxmatcher.SetNoRegAltHC(true);
 
       fluxmatcher.SetTargetConditioning(ch, chan_reg, (chan_is_fake_spec_run ? 
             std::vector<double>{{0},} 

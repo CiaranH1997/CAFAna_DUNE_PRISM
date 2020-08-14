@@ -407,7 +407,7 @@ SystShifts GetSystShifts(fhicl::ParameterSet const &ps) {
 
 SystShifts GetFluxSystShifts(SystShifts shift) {
   SystShifts outs;
-  auto fsysts = ::GetListOfSysts("nov17flux:nodet:noxsec");
+  auto fsysts = ::GetListOfSysts("OAflux:nodet:noxsec");
   for (auto syst : shift.ActiveSysts()) {
     if (std::find(fsysts.begin(), fsysts.end(), syst) != fsysts.end()) {
       outs.SetShift(syst, shift.GetShift(syst));

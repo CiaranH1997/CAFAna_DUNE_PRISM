@@ -16,6 +16,12 @@ nuisance_parameters: {
           flux_Nov17_9, 
      ]
 
+     flux_OA: [
+	  flux_OffAxis_0,
+	  flux_OffAxis_5,
+	  flux_OffAxis_7,
+     ]
+
      xsec: [
           MaCCQE, 
           MaCCRES, 

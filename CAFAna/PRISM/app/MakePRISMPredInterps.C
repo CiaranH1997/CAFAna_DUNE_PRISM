@@ -2,6 +2,8 @@
 
 #include "CAFAna/Prediction/PredictionsForPRISM.h"
 
+#include "CAFAna/Systs/DUNEFluxSystPRISM.h"
+
 #include "CAFAna/PRISM/PRISMAnalysisDefinitions.h"
 #include "CAFAna/PRISM/PRISMUtils.h"
 #include "CAFAna/PRISM/PredictionPRISM.h"
@@ -342,14 +344,14 @@ int main(int argc, char const *argv[]) {
 
     // Have to add fake data systs too.
     std::vector < ana::ISyst const * > fdlos = GetListOfSysts(
-            false, false, false, false, false, false, addfakedata, false);
+            false, false, false, false, false, false, false, addfakedata, false);
     los.insert(los.end(), fdlos.begin(), fdlos.end());
 
     los_flux = los;
-    KeepSysts(los_flux, GetListOfSysts("nov17flux:nodet:noxsec"));
+    KeepSysts(los_flux, GetListOfSysts("OAflux:nodet:noxsec"));
   } else {
     // Default but allow fake data dials to be turned off
-    los = GetListOfSysts(true, true, true, true, true, false, addfakedata);
+    los = GetListOfSysts(true, true, true, true, true, true, false, addfakedata);
   }
 
   std::cout << "[INFO]: Using " << los.size()
