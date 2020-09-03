@@ -5,8 +5,8 @@
 #include "NuisanceParameters.fcl"
 
 BasicPred: {
-	output_file: [/home/hasnipl/DP_DATA/NewCode_PRISMPredictions/PRISMPred_EProxy_NewProd_10Aug.root, "UPDATE"]
-	state_file: /home/hasnipl/DP_DATA/NewCode_PredInterps/PRISMState_EProxy_AltHC_NewProd_10Aug.root
+	output_file: [/dune/data/users/chasnip/NewCode/PRISMPredictions/PRISMPred_OldProd_HadBiasTest_2Sep.root, "UPDATE"]
+	state_file: /dune/data/users/chasnip/NewCode/PredInterps/PRISMState_AltHC_OldProd_FullEnergyScaleSyst_28Aug.root
 	projection_name: EProxy
 
 	use_PRISM: true
@@ -39,11 +39,24 @@ predictions: [
 
 	{
         @table::BasicPred
-        output_dir: "numu_nom"
+        output_dir: "numu_nomNoBias"
     },
+
+    #{
+    #    @table::BasicPred
+    #    output_dir: "numu_Escale"
+    #    syst: {
+    #        shifts: [
+    #            [TruthEnergyScale, 1],
+    #            [TruthEnergySqrt, 1],
+    #            [TruthEnergySqrt, 1],
+    #        ]
+    #    }
+    #},
+
 
 ]	
 
-scans[0].output_file[1]: "RECREATE"
+#scans[0].output_file[1]: "RECREATE"
 
 

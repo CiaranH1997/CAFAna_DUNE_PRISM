@@ -2,18 +2,18 @@
 
 # Build a pred interp script
 
-INPUTDIR=/home/hasnipl/DP_DATA
+INPUTDIR=/dune/data/users/chasnip/
 
 echo "${INPUTDIR}"
 
-source /home/hasnipl/CLionProjects/NewCode_CAFAna/CAFAna_DUNE_PRISM/CAFAna/build/Linux/CAFAnaEnv.sh
+#source /dune/app/users/chasnip/CAFAna_DUNE_PRISM/CAFAna/build/Linux/CAFAnaEnv.sh
 
-MakePRISMPredInterps -o ${INPUTDIR}/NewCode_PredInterps/PRISMState_EProxy_AltHC_NewProd_10Aug.root \
-        -N-nu ${INPUTDIR}/ND_CAF_FHC_FVCut_NewProd8Aug.root \
-        -F-nu ${INPUTDIR}/FD_FHC_nonswap.root \
+MakePRISMPredInterps -o ${INPUTDIR}/NewCode/PredInterps/PRISMState_AltHC_OldProd_ChargeHadBiasTest_28Aug.root \
+        -N-nu ${INPUTDIR}/OffAxisCAFs/CAF_FHC_PRISM_PROD4-14.root \
+        -F-nu ${INPUTDIR}/OffAxisCAFs/FD_FHC_nonswap.root \
         --bin-descriptor testopt --no-fakedata-dials \
         -A EProxy --syst-descriptor "nosyst" \
-        --FakeSR "OnAxis280kA" --no-fakedata-dials \
+        --FakeSR "OnAxis280kA" \
         --OA-bin-descriptor "OneNegXBin"
 
 

@@ -35,6 +35,21 @@ nuisance_parameters: {
           BeRPA_D 
      ]
 
+     det: [
+          TruthEnergyScale,
+          TruthEnergySqrt,
+          TruthEnergySqrt,
+          EMTruthUncorr,
+          EMTruthUncorrSqrt,
+          EMTruthUncorrInvSqrt,
+          ChargedHadTruthUncorr,
+          ChargedHadTruthUncorrSqrt,
+          ChargedHadTruthUncorrInvSqrt,
+          ETruthScaleMuLAr,
+          ETruthScaleMuLArSqrt,
+          ETruthScaleMuLArInvSqrt
+     ]
+
      all: [
           @sequence::nuisance_parameters.flux10,
           @sequence::nuisance_parameters.xsec

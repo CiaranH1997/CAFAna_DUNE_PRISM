@@ -8,6 +8,8 @@
 #include "CAFAna/PRISM/PRISMUtils.h"
 #include "CAFAna/PRISM/PredictionPRISM.h"
 
+#include "CAFAna/Systs/TruthEnergyNDSysts.h"
+
 using namespace ana;
 using namespace PRISM;
 
@@ -445,8 +447,21 @@ int main(int argc, char const *argv[]) {
     AnaWeightVars[kND_nub] = AnaWeightVars[kND_nub] * thinfactweight;
   }
 
-  ana::SystShifts DataShift =
-      GetFakeDataGeneratorSystShift(FakeDataShiftDescript);
+  //ana::SystShifts DataShift =
+  //    GetFakeDataGeneratorSystShift(FakeDataShiftDescript);
+  
+// Mock Data EnergyScale Shift TEST
+  
+  //double sigma(1);
+  //std::map<const ISyst *, double> shift_map;
+  //shift_map[ChargedHadTruthUncorrND] = sigma;
+  //shift_map[ChargedHadTruthUncorrSqrtND] = sigma;
+  //shift_map[ChargedHadTruthUncorrInvSqrtND] = sigma;
+  //const ChargedHadTruthUncorrND kChargedHadTruthUncorrND2;
+  //ISyst *syst;
+  //syst = ChargedHadTruthUncorrND();
+  ana::SystShifts DataShift = ana::SystShifts(&kChargedHadTruthUncorrND, 1);
+   
 
   auto PRISM = std::make_unique<PredictionPRISM>(
       axes.XProjection, axes.OffAxisPosition, EventRateMatchAxis);

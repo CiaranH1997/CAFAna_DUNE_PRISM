@@ -7,6 +7,7 @@
 #include "TAxis.h"
 #include "TFile.h"
 #include "TH1.h"
+#include "TObjString.h"
 
 #include <iostream>
 #include <sstream>

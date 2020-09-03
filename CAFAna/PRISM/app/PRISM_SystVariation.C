@@ -229,7 +229,7 @@ void PRISMSystVar(fhicl::ParameterSet const &pred) {
     }
 
     std::vector<std::vector<double>> toGetErr;
-    SystShifts shift_throw = fluxshift;
+    SystShifts shift_throw = shift; //fluxshift
 
     for (int i = 1; i <= PRISMPred->GetNbinsX(); i++) {
       std::vector<double> throws;
